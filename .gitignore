@@ -6,6 +6,8 @@ __pycache__/
 images/
 experiments/
 
+# xarray extensions
+*.nc
 # C extensions
 *.so
 
