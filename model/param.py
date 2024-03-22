@@ -56,22 +56,13 @@ class ParametricModels(ABC):
             xs  : 1xN anchors
         """
         pass
-    @abstractmethod
-    def error(self,curve):
-        """
-            Calculate the error for
-            curve   : object returned from our database
-        """
-        pass
+
 
 class Last1():
     def __init__(self,config):
         (ParametricModels,self).__init__(config)
     def fit(self,curve):
-        return 0 
-    def error(self,curve):
-        return 0 
-    def extrapolate(self,xs):
-        return 0
-
+        self.parameter = curve[1][-1]
+    def predict(self,curve):
+        return self.parameter
 
