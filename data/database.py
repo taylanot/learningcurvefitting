@@ -6,6 +6,63 @@
 """
 import numpy as np
 
+class Curve():
+    """
+        This class holds one learning curve that you want to fit in tuples
+        with their corresponding anchor
+        iterator for the curves.
+    """
+
+    def __init__(self,anchors,labels):
+        """
+           anchor   : 1xN array for anchor points of the learning curves
+           labels   : 1xN array labels of the learning curves
+        """
+        self.N = labels.shape[0] # This is the number of anchors needed
+        assert len(anchors.shape) == 1 and len(labels.shape) == 1
+        self.anchors = anchors
+        self.labels = labels
+
+    def __len__(self):
+        return (self.N)
+
+    def __str__(self):
+        return ("anchors:{}-labels:{}".
+                format(self.anchors,self.labels))
+
+    def shape(self):
+        return self.__len__()
+
+    def __getitem__(self,*args): 
+        return Curve(self.anchors[args[0]],self.labels[args[0]])
+
+    def clip(self):
+        """
+            This method will clip all the nan values to get your data ready for 
+            fitting.
+        """
+        idxs = np.where(np.isnan(self.labels))
+        for idx in idxs:
+            if idx.size != 0:
+                self.anchors = self.anchors[:,:idx[0]]
+                self.lables = self.labels[:,:idx[0]]
+    
+    def __iter__(self):
+        self.counter = -1
+        return self
+
+    def __next__(self):
+        if self.counter == self.N-1:
+            raise StopIteration
+        self.counter += 1
+        return (self.anchors[self.counter], self.labels[self.counter])
+
+    def normalize(self):
+        # Need to fill this with some variants that we might discuss 
+        pass
+
+
+
 class Curves():
     """
         This class holds all the learning curves that you want to fit in tuples
@@ -16,7 +73,7 @@ class Curves():
     def __init__(self,anchors,labels):
         """
            anchor   : 1xN or MxN array for anchor points of the learning curves
-           labels   : MxN array labels of the learning curves
+           labels   : 1xN or MxN array labels of the learning curves
         """
         self.M = labels.shape[0] # This is the number of curves we have 
         self.N = labels.shape[1] # This is the number of anchors needed
@@ -43,7 +100,7 @@ class Curves():
         return self.__len__()
 
     def __getitem__(self,*args): 
-        return (self.anchors[args[0]],self.labels[args[0]])
+        return Curve(self.anchors[args[0]],self.labels[args[0]])
 
     def clip(self):
         """
@@ -64,12 +121,10 @@ class Curves():
         if self.counter == self.M-1:
             raise StopIteration
         self.counter += 1
-        return (self.anchors[self.counter], self.labels[self.counter])
+        return Curve(self.anchors[self.counter], self.labels[self.counter])
 
     def normalize(self):
         pass
-
-       
 
 class Database():
     def __init__(self, conf):

@@ -3,8 +3,11 @@
     @author : Ozgur Taylan Turan, 2024
     @file   : model/__init__.py
 """
-from .param import (Last1)
+from .param import (EXP2)
+from .heuristic import (LAST1,LASTGRAD)
 
 __all__ = [
-    "Last1",
+    "LAST1",
+    "LASTGRAD",
+    "EXP2",
 ]

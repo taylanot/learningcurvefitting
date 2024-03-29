@@ -21,7 +21,10 @@ ex = Experiment(experiment_name,save_git_info=False)
 
 @ex.capture
 def get_experiment_dir(_run):
-    return os.path.join(_run.experiment_info["name"],_run._id)
+    if _run._id is not None:
+        return os.path.join(_run.experiment_info["name"],_run._id)
+    else:
+        return _run.experiment_info["name"]
 
 @ex.config
 def my_config():
@@ -33,13 +36,16 @@ def my_config():
     conf = dict()
 
     conf["database"] = {
-            "name":"LCDB.nc",
-            "kwargs":None # this should include split and normalize at least
+            "name":"LCDB.nc",   
+            "kwargs":None       # this should include split/normalize at least
             }
 
     conf["model"] = {
-            "name":"Last1",
-            "kwargs":None, # this should include initialization at least
+            "name":"EXP2",      # model name this allows selection of the model
+            "init":"normal",    # how to initiliaze the model parameters
+            "opt": "L-BFGS-B",  # all the options in scipy.optimize.minimize
+                                # and lm for scipy.optimize.curve_fit
+            "jac": True,        # exact jacobian usage instead of finite diff.
             }
 
     conf["run"] = {
@@ -56,39 +62,6 @@ def my_config():
     conf["models"] = dict()
     for a, b in insp.getmembers(implib.import_module("model"),insp.isclass):
         conf["models"].setdefault(a, [ ]).append(b) 
-        
-
-
-@ex.capture
-def echo(what):
-    """ 
-        This is a simple function to capture.
-    """
-    print(what)
-
-@ex.capture
-def fit(curves,model,at):
-    """ 
-        Fit all the data
-        curves  : MxN M full curves with N acnhors
-        model   : which model used to fit the curve
-        at      : number of anchors from the  start to fit
-    """
-    for curve in curves:
-       fit_id(curve,model,at) 
-     
-@ex.capture
-def fit_id(curve,model,at):
-    """ 
-        curve   : 1xN M full curves with N acnhors
-        model   : which model used to fit the curve 
-        at      : number of anchors from the  start to fit 
-    """
-    model.fit(curve[:at])
-    model.predict(curve)
-    return (model.predict(curve)-curve)
-
-
 
 @ex.automain
 def run(seed,conf,_run):
@@ -98,14 +71,14 @@ def run(seed,conf,_run):
         conf    : configuration that we specify
     """
     save_dir = get_experiment_dir()
-    print(dir(_run.observers))
-    print(save_dir)
     # Get the database to be used
 
     # It can be good to write a database class fro wrapping this nicely for any
     # other database, but for now I think it is a waste of time...
-    curves = Curves(np.arange(10),np.random.normal(size=(3,10)))
+    curves = Curves(np.arange(20),np.array([np.exp(-np.arange(20)),
+                                            np.exp(-2*np.arange(20))]))
     #database = xr.load_dataset(conf["database"]["name"])
+    #print(database)
 
     #for curve in database[{"inner_seed":0,"outer_seed":0,"ttv":0}].curves:
     # This is how tyou access one "curve"
@@ -116,27 +89,17 @@ def run(seed,conf,_run):
 
     # Select the experiment
     if (isinstance(conf["run"]["which"],str) and conf["run"]["which"]=="all"):
-        conf["exps"]["fit"](
+        result = conf["exps"]["fit"](
             curves,model,
             conf["run"]["at"]
             )
 
-    if (isinstance(conf["run"]["which"],int)):
-        conf["exps"]["fit_id"](
-            curves,
+    elif (isinstance(conf["run"]["which"],int)):
+        result = conf["exps"]["fit_id"](
+            curves[conf["run"]["which"]],
             model,conf["run"]["at"]
             )
-
-    ## Select the experiment
-    #if (isinstance(conf["run"]["which"],str) and conf["run"]["which"]=="all"):
-    #    conf["exps"]["fit"](
-    #        database,model,
-    #        conf["run"]["at"],conf["run"]["tos"]
-    #        )
-
-    #if (isinstance(conf["run"]["which"],int)):
-    #    conf["exps"]["fit_id"](
-    #        database[conf["run"]["which"]],
-    #        model,conf["run"]["at"],conf["run"]["tos"]
-    #        )
+    else:
+        NotImplementedError
+    print(result)
 

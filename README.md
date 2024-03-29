@@ -8,9 +8,7 @@ First, we need to download the LCDB
 ```
 wget ...
 ```
-
-
-Download our image:
+Then (optionally) download our image:
 
 ```
 singularity build learningcurvefitting.sif docker://taylanot/learningcurvefitting:latest
