@@ -16,12 +16,12 @@ class ParametricModelFactory():
         self.config = config
 
         self.status = False
+
         self.xi = sym.IndexedBase('x')
         self.yi = sym.IndexedBase('y')
         self.ts = sym.symbols("t0:{}".format(self.ntheta))
         self.N, self.x = sym.symbols("N x")
         self.i = sym.symbols('i', integer=True)
-        
         if not "init" in self.config.keys(): 
             self._theta0 = np.zeros(self.ntheta)
         elif config["init"] == "uniform":
@@ -29,11 +29,15 @@ class ParametricModelFactory():
         elif config["init"] == "normal":
             self._theta0 = np.random.normal(size=self.ntheta)
         elif config["init"] == "zeros":
-            self._theta0 = np.random.zeros(size=self.ntheta)
+            self._theta0 = np.zeros(self.ntheta)
         elif config["init"] == "ones":
-            self._theta0 = np.random.ones(size=self.ntheta)
+            self._theta0 = np.ones(self.ntheta)
         else:
             NotImplementedError
+        self.theta = self._theta0
+        # These need to be defined in the child class only
+        self._obj_expr = None 
+        self._model_expr = None 
 
     def _lambdify(self):
         self.obj = sym.lambdify((self.ts,self.xi,self.yi,self.N),self._obj_expr)
@@ -41,7 +45,11 @@ class ParametricModelFactory():
         self.jac_obj = lambda theta, x, y, N:\
         [sym.lambdify((self.ts,self.xi,self.yi,self.N),
         sym.diff(self._obj_expr,t))(theta,x,y,N) for t in self.ts]
-
+        
+        # I think model parameters should come first but this is how minpack and 
+        # scipy collaboration force me to commit these sins...
+        # I am returning a sensible version for the sins otherwise I need to 
+        # write another finite difference function.
         self.model = sym.lambdify((self.x,*self.ts), self._model_expr)
 
         self.jac_model = lambda x, *theta: \
@@ -52,16 +60,8 @@ class ParametricModelFactory():
     def model_expr(self):
         return self._model_expr
 
-    @model_expr.setter
-    def model_expr(self, expr):
-        return self._model_expr
-
     @property
     def obj_expr(self):
-        return self._obj_expr
-
-    @obj_expr.setter
-    def obj_expr(self, expr):
         return self._obj_expr
 
     @property
@@ -87,19 +87,27 @@ class ParametricModelFactory():
         return self._ntheta
 
     @property
-    def get_jac_model(self, x, theta):
+    def get_func(self):
+        """
+            Underlying function
+        """
+        return sym.lambdify((self.ts,self.x), self._model_expr)
+
+
+    @property
+    def get_jac_model(self):
         """
             Jacobian lambda function
         """
-        return self.jac_model(x,theta)
+        return self.jac_model
 
     @property
-    def get_jac_obj(self,theta,x,y,N):
+    def get_jac_obj(self):
         """
             Jacobian Calculation
             xs  : 1xN anchors
         """
-        return self.jac_obj(theta,x)
+        return self.jac_obj
 
     def fit(self,curve):
         """
@@ -137,19 +145,19 @@ class ParametricModelFactory():
 
 class EXP2(ParametricModelFactory):
     def __init__(self,config):
-
+        
+        # How many parameters does the model have 
         nparam = 2
 
         super().__init__(config, nparam)
-
-        obj = (sym.Sum(
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
                 (self.ts[0]*sym.exp(-self.ts[1]*self.xi[self.i])-
                     self.yi[self.i])**2,
                 (self.i,0,self.N)))
 
-        model = self.ts[0]*sym.exp(-self.ts[1]*self.x)
-
-        self._obj_expr = obj
-        self._model_expr = model
+        # Function for the model
+        self._model_expr = self.ts[0]*sym.exp(-self.ts[1]*self.x)
 
         self._lambdify()
