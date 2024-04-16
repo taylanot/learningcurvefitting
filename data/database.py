@@ -66,7 +66,7 @@ class Curve():
         # Need to fill this with some variants that we might discuss 
         pass
     def log_transform(self):
-        self.labels = np.log(self.labels)
+        self.labels = np.log(self.labels+1)
         return Curve(self.anchors, self.labels)
 
 
@@ -112,7 +112,7 @@ class Curves():
         return self.__len__()
 
     def __getitem__(self,*args): 
-        return Curve(self.anchors[args[0]],self.labels[args[0]])
+        return Curve(self.anchors[args[0]],self.labels[args[0]],self.tags[args[0]])
 
     def clip(self):
         """
@@ -137,8 +137,6 @@ class Curves():
 
     def normalize(self):
         pass
-
-    
 
 class Database():
     def __init__(self, conf):

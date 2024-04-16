@@ -7,7 +7,7 @@
 import numpy as np
 import sympy as sym
 import math
-from scipy.optimize import minimize, curve_fit
+from scipy.optimize import minimize, curve_fit, brute
 
 class ParametricModelFactory():
     def __init__(self, config, n_param):
@@ -27,6 +27,8 @@ class ParametricModelFactory():
             self._theta0 = np.zeros(self.ntheta)
         elif config["init"] == "uniform":
             self._theta0 = np.random.uniform(size=self.ntheta)
+        elif config["init"] == "uniform_wide":
+            self._theta0 = np.random.uniform(0,5,size=self.ntheta)
         elif config["init"] == "normal":
             self._theta0 = np.random.normal(size=self.ntheta)
         elif config["init"] == "zeros":
@@ -34,11 +36,25 @@ class ParametricModelFactory():
         elif config["init"] == "ones":
             self._theta0 = np.ones(self.ntheta)
         else:
-            NotImplementedError
+            self._theta0 = np.ones(self.ntheta)
         self.theta = self._theta0
         # These need to be defined in the child class only
         self._obj_expr = None 
         self._model_expr = None 
+        self._theta_ranges = None # should be a nparam lengeht tuple of slices
+
+    def _warm_start(self,curve):
+        if self._theta_ranges == None:
+           self._theta_ranges = [slice(0,1,0.25)]*self._ntheta
+        self._lambdify__()
+        def obj (param,model,curve):
+            return np.mean((model(curve.anchors, *param)-curve.labels)**2)
+
+        self._theta0 = brute(obj,self._theta_ranges,\
+                        args=(self.model,curve),full_output=False, finish=None,\
+                        Ns=1, workers=1)
+        print(self._theta0)
+
 
     def _lambdify(self):
         assert (self._obj_expr is not None) or self._model_expr is not None
@@ -51,28 +67,25 @@ class ParametricModelFactory():
                     sym.log(self._obj_expr+1))
             self.jac_obj = lambda theta, x, y, N:\
             [sym.lambdify((self.ts,self.xi,self.yi,self.N),
-            sym.diff(sym.log(self._obj_expr+1),t))(theta,x,y,N) for t in self.ts]
+        sym.diff(sym.log(self._obj_expr+1),t))(theta,x,y,N) for t in self.ts]
         else:
             self.obj = None
         
         if self._model_expr is not None:
             if not "fit" in self.config.keys():
                 self.model = sym.lambdify((self.x,*self.ts), self._model_expr)
-                print('here')
             elif self.config["fit"] == "log":
                 self.model = sym.lambdify((self.x,*self.ts),
                     sym.log(self._model_expr+1))
-                print('there')
 
             self.jac_model = lambda x, *theta: \
                 np.array([sym.lambdify((self.x,*self.ts),
-                sym.diff(sym.log(self._model_expr+1),t))(x,*theta) for t in self.ts]).T
+                sym.diff(sym.log(self._model_expr+1),t))(x,*theta)\
+                        for t in self.ts]).T
         else:
             self.model = None
 
     def _lambdify__(self):
-        # This function is just for data creation for the tests
-        # I know it is dirty, but who has time for this?
         assert (self._obj_expr is not None) or self._model_expr is not None
         if self._obj_expr is not None:
             self.obj = sym.lambdify((self.ts,self.xi,self.yi,self.N),
@@ -135,7 +148,6 @@ class ParametricModelFactory():
         """
         return sym.lambdify((self.ts,self.x), self._model_expr)
 
-
     @property
     def get_jac_model(self):
         """
@@ -161,11 +173,11 @@ class ParametricModelFactory():
             if self.config["jac"]:
                 results = curve_fit(self.model,curve.anchors,curve.labels,
                     p0=self._theta0,
-                    jac=self.jac_model,full_output=True)
+                    jac=self.jac_model,full_output=True,maxfev=10000)
             else:
                 results = curve_fit(self.model,curve.anchors,curve.labels,
                     p0=self._theta0,
-                    jac=None,full_output=True)
+                    jac=None,full_output=True,maxfev=10000)
             if results[-1] == 1 or results[-1] == 2 or results[-1] == 3 \
                     or results[-1] == 4:
                 self.status = True
@@ -186,9 +198,16 @@ class ParametricModelFactory():
             curve   : object returned from our database
         """
         self._lambdify()
+        ### If we choose the warm initialization the possibiilty that we don't 
+        ### have memory available is a possibility. If we exceeed the memory
+        ### we initialize the parameters with ones.
+        if self.config["init"] == "warm":
+            try:
+                self._warm_start(curve)
+            except:
+                self._theta0 = np.ones(self.ntheta)
         if not "fit" in self.config.keys():
             return self._fit(curve)
-
         if self.config['fit'] == "log":
             return self._fit(curve.log_transform())
         
@@ -198,6 +217,8 @@ class ParametricModelFactory():
             Pred with the model at
             xs  : 1xN anchors
         """
+        #return self.model(xs,*self.theta)
+        self._lambdify__()
         return self.model(xs,*self.theta)
 
 
@@ -239,8 +260,6 @@ class BNSL(ParametricModelFactory):
                     for i in range(1,self.nbreak+1)]
         else:
             _model_expr_n = [1]
-
         self._model_expr = (_model_expr_base * math.prod(_model_expr_n))
-        print(self._model_expr)
 
 

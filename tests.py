@@ -11,6 +11,7 @@ import inspect as insp
 import importlib as implib
 #
 import unittest 
+import copy
 # Import local
 from model import *
 from data import *
@@ -50,42 +51,14 @@ def num_jac(f,x,args=None,method='central',h=0.01, ):
     above num_jac for the reversed args intake.
 """
 import matplotlib.pyplot as plt
-#def param_test_factory(model,x = np.arange(1,20),tol=1e-3):
-#    theta = model._theta0
-#    model.theta = theta
-#    y = model.predict(x)
-#    method = "central"
-#    curve = Curve(x,y)
-#    plt.plot(x,y);plt.show()
-#    h = 1e-6
-#
-#    class Test(unittest.TestCase):
-#        def test_obj_jacobian(self):
-#            if model.obj is not None:
-#                args = (x,y,len(x)-1)
-#                jac_ = num_jac(model.obj,theta,args,method,h)
-#                jac = model.get_jac_obj(theta,x,y,len(x)-1)
-#                self.assertTrue(np.allclose(jac,jac_, tol, tol))
-#        def test_model_jacobian(self):
-#            if model.model is not None:
-#                for xi in x:
-#                    jac_ = num_jac(model.get_func,theta,[xi],method,h)
-#                    jac = model.get_jac_model(xi,*theta)
-#                    self.assertTrue(np.allclose(jac,jac_, tol, tol))
-#        def test_fit(self):
-#            model._theta0[:] = 1+5e-1
-#            model.fit(curve)
-#            self.assertTrue(np.allclose(model.theta,np.ones(model.ntheta)
-#                ,tol,tol))
-#    return Test
 
-def param_test_factory(model,x = np.arange(1,20),tol=1e-3):
+
+def jac_test_factory(model,x = np.arange(1,20),tol=1e-3):
     theta = model._theta0
     model.theta = theta
     y = model.predict(x)
     method = "central"
     curve = Curve(x,y)
-    plt.plot(x,y);plt.show()
     h = 1e-6
 
     class TestJac(unittest.TestCase):
@@ -104,7 +77,7 @@ def param_test_factory(model,x = np.arange(1,20),tol=1e-3):
 
     return TestJac
 
-def param_test_factory(model,x = np.arange(1,20),tol=1e-3):
+def fit_test_factory(model,x = np.arange(1,20),tol=1e-3):
     theta = model._theta0
     model.theta = theta
     y = model.predict(x)
@@ -116,7 +89,6 @@ def param_test_factory(model,x = np.arange(1,20),tol=1e-3):
         def test_fit(self):
             model._theta0[:] = 1.1
             model.fit(curve)
-            print(model._theta[:])
             self.assertTrue(np.allclose(model.theta,np.ones(model.ntheta)
                 ,tol,tol))
     return Test
@@ -148,13 +120,19 @@ for name,uninit_model in models.items():
 
     if (name == "EXP2"):
         model = uninit_model[0].lambdify(config)
-        globals()["dyno-counter{}".format(counter)] = \
-                GeneralFactory(param_test_factory(model))
+        #globals()["jac-test{}".format(counter)] = \
+        #        GeneralFactory(jac_test_factory(model))
+        #globals()["fit-test{}".format(counter)] = \
+        #        GeneralFactory(fit_test_factory(model))
+
 
     elif (name =="BNSL"):
         model = uninit_model[0].lambdify(config_log)
-        globals()["dyno-counter{}".format(counter)] = \
-                GeneralFactory(param_test_factory(model))
+
+    globals()["jac-test{}".format(counter)] = \
+                GeneralFactory(jac_test_factory(copy.deepcopy(model)))
+    globals()["fit-test{}".format(counter)] = \
+                GeneralFactory(fit_test_factory(copy.deepcopy(model)))
 
 if __name__ == '__main__':
     #unittest.main(verbosity=2)

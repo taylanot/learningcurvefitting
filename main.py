@@ -6,10 +6,12 @@
 # Import external 
 from sacred import Experiment 
 import xarray as xr
+import polars as ps
 import numpy as np
 import sys
 import inspect as insp
 import importlib as implib
+import matplotlib.pyplot as plt
 import os
 # Import local
 from model import *
@@ -46,44 +48,44 @@ def my_config():
             "kwargs":None       # this should include split/normalize at least
             }
 
-    #conf["model"] = {
-    #        "name":"EXP2",      # model name this allows selection of the model
-    #        "init":"normal",    # how to initiliaze the model parameters
-    #        "opt": "L-BFGS-B",  # all the options in scipy.optimize.minimize
-    #                            # and lm for scipy.optimize.curve_fit
-    #        "jac": True,        # exact jacobian usage instead of finite diff.
-    #        }
     conf["model"] = {
-            "name":"BNSL",      # model name this allows selection of the model
-            "nbreak":0,      # model name this allows selection of the model
+            "name":"EXP2",      # model name this allows selection of the model
             "init":"ones",    # how to initiliaze the model parameters
-            #"init":"uniform",    # how to initiliaze the model parameters
-            "fit":"log",    # how to initiliaze the model parameters
-            "opt": "lm",  # all the options in scipy.optimize.minimize
+            "opt": "L-BFGS-B",  # all the options in scipy.optimize.minimize
                                 # and lm for scipy.optimize.curve_fit
             "jac": True,        # exact jacobian usage instead of finite diff.
             }
+    #conf["model"] = {
+    #        "name":"BNSL",      # model name this allows selection of the model
+    #        "nbreak":2,         # model name this allows selection of the model
+    #        "init":"warm",      # how to initiliaze the model parameters
+    #        "fit":"log",        # fit with log transformation
+    #        "opt": "lm",        # all the options in scipy.optimize.minimize
+    #                            # and lm for scipy.optimize.curve_fit
+    #        "jac": True,        # exact jacobian usage instead of finite diff.
+    #        }
 
     conf["fit"] = {
-            "which":0,
-            "till":20
+            "which":[0,1],
+            "till":50
             }
 
     # Add experiment functions here.
     conf["with"] = {
             "fit":fit,
-            "fit_idx":fit_idx,
+            "fit_id":fit_id,
             } 
 
     conf["models"] = dict()
     for a, b in insp.getmembers(implib.import_module("model"),insp.isclass):
         conf["models"].setdefault(a, [ ]).append(b) 
+    conf["save"] = "brief"      # or detail
 
 @ex.automain
 def run(seed,conf,_run):
     """ 
         Main experiment will run in this one
-        seed    : seed of the run (automatically determined by sacred
+        seed    : seed of the run (automatically determined by sacred)
         conf    : configuration that we specify
     """
     save_dir = get_experiment_dir()
@@ -95,7 +97,8 @@ def run(seed,conf,_run):
     #curves = Curves(np.arange(20),np.array([np.exp(-np.arange(20)),
     #                                        np.exp(-2*np.arange(20))]))
 
-    #curves = Database(conf["database"]).get_curves()
+    curves = Database(conf["database"]).get_curves()
+    #print(curves)
     #database = xr.load_dataset(conf["database"]["name"])
     #print(database)
 
@@ -105,26 +108,35 @@ def run(seed,conf,_run):
     #curve = database[{"dataset":0,"learner":0,"inner_seed":0,"outer_seed":0}].curves
     # Get the model
     model = conf["models"][conf["model"]["name"]][0](conf["model"])
-    x = np.arange(1,20)
-    model._theta0 = [1.1,1.1,1.1]
-    curves = Curves(x,np.array([1+x.astype(float)**(-2),
-                                3*x.astype(float)**(-2),
-                                1+x.astype(float)**(-2)]))
-
-
+    #x = np.arange(1,20)
+    #curves = Curves(x,np.array([2+x.astype(float)**(-2),
+    #                            3*x.astype(float)**(-2),
+    #                            1+x.astype(float)**(-2)]))
     #curves = Curve(np.arange(1,20),np.array(model.predict(np.arange(1,20))))
 
     # Select the experiment
     if (isinstance(conf["fit"]["which"],str) and conf["fit"]["which"]=="all"):
         result = conf["with"]["fit"](
-            curves,model,
-            conf["fit"]["till"]
+            curves,model,conf["fit"]["till"],conf["fit"]["which"]
             )
 
     elif (isinstance(conf["fit"]["which"],int)):
-        result = conf["with"]["fit_idx"](
+        result = conf["with"]["fit_id"](
+            curves[conf["fit"]["which"]],model,conf["fit"]["till"]
+            )
+    elif (isinstance(conf["fit"]["which"],list)):
+        result = conf["with"]["fit"](
             curves,model,conf["fit"]["till"],conf["fit"]["which"]
             )
+
     else:
         NotImplementedError
-    print(result)
+
+    if conf["save"] == "brief":
+        #print(result["error"][:,-1])
+        #print(ps.DataFrame(result["error"][:,-1][np.newaxis,:],orient='row'))
+        df = ps.DataFrame(result["error"][:,-1][np.newaxis,:],orient='row')
+        df.columns = result["tags"]
+        print(df)
+    else:
+        NotImplementedError
