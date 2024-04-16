@@ -3,9 +3,10 @@
     @author : Ozgur Taylan Turan, 2024
     @file   : data/__init__.py
 """
-from .database import (Curves,Curve)
+from .database import (Curves,Curve,Database)
 
 __all__ = [
     "Curves",
     "Curve",
+    "Database",
 ]

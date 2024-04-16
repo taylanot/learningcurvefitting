@@ -49,6 +49,60 @@ def num_jac(f,x,args=None,method='central',h=0.01, ):
     Creating a test factory is a great idea for this i think. Need to adjust
     above num_jac for the reversed args intake.
 """
+import matplotlib.pyplot as plt
+#def param_test_factory(model,x = np.arange(1,20),tol=1e-3):
+#    theta = model._theta0
+#    model.theta = theta
+#    y = model.predict(x)
+#    method = "central"
+#    curve = Curve(x,y)
+#    plt.plot(x,y);plt.show()
+#    h = 1e-6
+#
+#    class Test(unittest.TestCase):
+#        def test_obj_jacobian(self):
+#            if model.obj is not None:
+#                args = (x,y,len(x)-1)
+#                jac_ = num_jac(model.obj,theta,args,method,h)
+#                jac = model.get_jac_obj(theta,x,y,len(x)-1)
+#                self.assertTrue(np.allclose(jac,jac_, tol, tol))
+#        def test_model_jacobian(self):
+#            if model.model is not None:
+#                for xi in x:
+#                    jac_ = num_jac(model.get_func,theta,[xi],method,h)
+#                    jac = model.get_jac_model(xi,*theta)
+#                    self.assertTrue(np.allclose(jac,jac_, tol, tol))
+#        def test_fit(self):
+#            model._theta0[:] = 1+5e-1
+#            model.fit(curve)
+#            self.assertTrue(np.allclose(model.theta,np.ones(model.ntheta)
+#                ,tol,tol))
+#    return Test
+
+def param_test_factory(model,x = np.arange(1,20),tol=1e-3):
+    theta = model._theta0
+    model.theta = theta
+    y = model.predict(x)
+    method = "central"
+    curve = Curve(x,y)
+    plt.plot(x,y);plt.show()
+    h = 1e-6
+
+    class TestJac(unittest.TestCase):
+        def test_obj_jacobian(self):
+            if model.obj is not None:
+                args = (x,y,len(x)-1)
+                jac_ = num_jac(model.obj,theta,args,method,h)
+                jac = model.get_jac_obj(theta,x,y,len(x)-1)
+                self.assertTrue(np.allclose(jac,jac_, tol, tol))
+        def test_model_jacobian(self):
+            if model.model is not None:
+                for xi in x:
+                    jac_ = num_jac(model.get_func,theta,[xi],method,h)
+                    jac = model.get_jac_model(xi,*theta)
+                    self.assertTrue(np.allclose(jac,jac_, tol, tol))
+
+    return TestJac
 
 def param_test_factory(model,x = np.arange(1,20),tol=1e-3):
     theta = model._theta0
@@ -59,38 +113,51 @@ def param_test_factory(model,x = np.arange(1,20),tol=1e-3):
     h = 1e-6
 
     class Test(unittest.TestCase):
-        def test_obj_jacobian(self):
-            args = (x,y,len(x)-1)
-            jac_ = num_jac(model.obj,theta,args,method,h)
-            jac = model.get_jac_obj(theta,x,y,len(x)-1)
-            self.assertTrue(np.allclose(jac,jac_, tol, tol))
-        def test_model_jacobian(self):
-            for xi in x:
-                jac_ = num_jac(model.get_func,theta,[xi],method,h)
-                jac = model.get_jac_model(xi,*theta)
-                self.assertTrue(np.allclose(jac,jac_, tol, tol))
         def test_fit(self):
-            model._theta0[:] = 0
+            model._theta0[:] = 1.1
             model.fit(curve)
+            print(model._theta[:])
             self.assertTrue(np.allclose(model.theta,np.ones(model.ntheta)
                 ,tol,tol))
     return Test
+
+
+
 
 models = dict()
 for a, b in insp.getmembers(implib.import_module("model"),insp.isclass):
         models.setdefault(a, [ ]).append(b) 
 
+counter = 0 
+def GeneralFactory(factory):
+    global counter 
+    counter += 1
+    return type("testcase-{}".format(counter), (factory,),{})
+tests = list()
 for name,uninit_model in models.items():
-    if not (name == "LAST1" or name == "LASTGRAD"):
-        config = { "name":name,      
-                    "init":"ones",    
-                    "opt": "lm",  
-                    "jac": True }
-        model = uninit_model[0](config)
-        class Tests(param_test_factory(model)):
-            pass
+    config = { "name":name,      
+               "init":"ones",    
+               "opt": "lm",  
+               "jac": True }
+
+    config_log = { "name":name,      
+                   "init":"ones",    
+                   "opt": "lm",  
+                   "fit": "log",
+                   "jac": False}
+
+    if (name == "EXP2"):
+        model = uninit_model[0].lambdify(config)
+        globals()["dyno-counter{}".format(counter)] = \
+                GeneralFactory(param_test_factory(model))
+
+    elif (name =="BNSL"):
+        model = uninit_model[0].lambdify(config_log)
+        globals()["dyno-counter{}".format(counter)] = \
+                GeneralFactory(param_test_factory(model))
 
 if __name__ == '__main__':
+    #unittest.main(verbosity=2)
     unittest.main()
 
 

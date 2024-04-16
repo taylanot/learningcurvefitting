@@ -8,6 +8,9 @@ experiments/
 
 # xarray extensions
 *.nc
+# csv files
+*.csv
+
 # C extensions
 *.so
 

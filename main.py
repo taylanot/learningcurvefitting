@@ -35,28 +35,44 @@ def my_config():
     """
     conf = dict()
 
+    #conf["database"] = {
+    #        "type":"xarray_dataset"
+    #        "name":"LCDB.nc",   
+    #        "kwargs":None       # this should include split/normalize at least
+    #        }
     conf["database"] = {
-            "name":"LCDB.nc",   
+            "type":"csv",
+            "filename":"test_class.csv",   
             "kwargs":None       # this should include split/normalize at least
             }
 
+    #conf["model"] = {
+    #        "name":"EXP2",      # model name this allows selection of the model
+    #        "init":"normal",    # how to initiliaze the model parameters
+    #        "opt": "L-BFGS-B",  # all the options in scipy.optimize.minimize
+    #                            # and lm for scipy.optimize.curve_fit
+    #        "jac": True,        # exact jacobian usage instead of finite diff.
+    #        }
     conf["model"] = {
-            "name":"EXP2",      # model name this allows selection of the model
-            "init":"normal",    # how to initiliaze the model parameters
-            "opt": "L-BFGS-B",  # all the options in scipy.optimize.minimize
+            "name":"BNSL",      # model name this allows selection of the model
+            "nbreak":0,      # model name this allows selection of the model
+            "init":"ones",    # how to initiliaze the model parameters
+            #"init":"uniform",    # how to initiliaze the model parameters
+            "fit":"log",    # how to initiliaze the model parameters
+            "opt": "lm",  # all the options in scipy.optimize.minimize
                                 # and lm for scipy.optimize.curve_fit
             "jac": True,        # exact jacobian usage instead of finite diff.
             }
 
-    conf["run"] = {
-            "which":"all",
-            "at":10
+    conf["fit"] = {
+            "which":0,
+            "till":20
             }
 
     # Add experiment functions here.
-    conf["exps"] = {
+    conf["with"] = {
             "fit":fit,
-            "fit_id":fit_id,
+            "fit_idx":fit_idx,
             } 
 
     conf["models"] = dict()
@@ -75,8 +91,11 @@ def run(seed,conf,_run):
 
     # It can be good to write a database class fro wrapping this nicely for any
     # other database, but for now I think it is a waste of time...
-    curves = Curves(np.arange(20),np.array([np.exp(-np.arange(20)),
-                                            np.exp(-2*np.arange(20))]))
+    # exponential
+    #curves = Curves(np.arange(20),np.array([np.exp(-np.arange(20)),
+    #                                        np.exp(-2*np.arange(20))]))
+
+    #curves = Database(conf["database"]).get_curves()
     #database = xr.load_dataset(conf["database"]["name"])
     #print(database)
 
@@ -86,20 +105,26 @@ def run(seed,conf,_run):
     #curve = database[{"dataset":0,"learner":0,"inner_seed":0,"outer_seed":0}].curves
     # Get the model
     model = conf["models"][conf["model"]["name"]][0](conf["model"])
+    x = np.arange(1,20)
+    model._theta0 = [1.1,1.1,1.1]
+    curves = Curves(x,np.array([1+x.astype(float)**(-2),
+                                3*x.astype(float)**(-2),
+                                1+x.astype(float)**(-2)]))
+
+
+    #curves = Curve(np.arange(1,20),np.array(model.predict(np.arange(1,20))))
 
     # Select the experiment
-    if (isinstance(conf["run"]["which"],str) and conf["run"]["which"]=="all"):
-        result = conf["exps"]["fit"](
+    if (isinstance(conf["fit"]["which"],str) and conf["fit"]["which"]=="all"):
+        result = conf["with"]["fit"](
             curves,model,
-            conf["run"]["at"]
+            conf["fit"]["till"]
             )
 
-    elif (isinstance(conf["run"]["which"],int)):
-        result = conf["exps"]["fit_id"](
-            curves[conf["run"]["which"]],
-            model,conf["run"]["at"]
+    elif (isinstance(conf["fit"]["which"],int)):
+        result = conf["with"]["fit_idx"](
+            curves,model,conf["fit"]["till"],conf["fit"]["which"]
             )
     else:
         NotImplementedError
     print(result)
-
