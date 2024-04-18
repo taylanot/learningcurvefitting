@@ -1,0 +1,24 @@
+INFO - name_your_experiment - Running command 'run'
+INFO - name_your_experiment - Started run with ID "3"
+<lambdifygenerated-2>:2: RuntimeWarning: divide by zero encountered in divide
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)
+<lambdifygenerated-2>:2: RuntimeWarning: divide by zero encountered in scalar divide
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)
+[0.   0.25 0.   0.25 0.75 0.25 0.25 0.75 0.75]
+<lambdifygenerated-2>:2: RuntimeWarning: overflow encountered in power
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)
+<lambdifygenerated-2>:2: RuntimeWarning: overflow encountered in multiply
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)
+<lambdifygenerated-2>:2: RuntimeWarning: invalid value encountered in power
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)
+<lambdifygenerated-17591>:2: RuntimeWarning: divide by zero encountered in divide
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)
+<lambdifygenerated-17591>:2: RuntimeWarning: divide by zero encountered in scalar divide
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)
+[0.   0.25 0.   0.25 0.75 0.25 0.25 0.75 0.75]
+<lambdifygenerated-17591>:2: RuntimeWarning: overflow encountered in power
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)
+<lambdifygenerated-17591>:2: RuntimeWarning: overflow encountered in multiply
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)
+<lambdifygenerated-17591>:2: RuntimeWarning: invalid value encountered in power
+  return (t0 + t1*x**(-t2))*((x/t3)**(1.0/t4) + 1.0)**(-t4*t5)*((x/t6)**(1.0/t7) + 1.0)**(-t7*t8)

@@ -149,12 +149,8 @@ class Database():
             self.curves = self.curves.to_numpy()
         else:
             NotImplementedError 
-    def get_curves(self,idx=None):
-        if idx==None:
-            return Curves(self.N,self.curves.T,self.idx)
-        else:
-            return Curves(self.N,(self.curves.T)[idx],
-                        np.array(self.idx)[idx].tolist())
+    def get_curves(self):
+        return Curves(self.N,self.curves.T,self.idx)
     def get_learner(self,idx):
         pass 
     def get_dataset(self,idx):

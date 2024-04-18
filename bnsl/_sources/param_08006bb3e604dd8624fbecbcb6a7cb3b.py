@@ -23,42 +23,25 @@ class ParametricModelFactory():
         self.ts = sym.symbols("t0:{}".format(self.ntheta))
         self.N, self.x = sym.symbols("N x")
         self.i = sym.symbols('i', integer=True)
-        # These need to be defined in the child class only
-        self._obj_expr = None 
-        self._model_expr = None 
-        self._theta_ranges = None # should be a nparam length tuple of slices
-        self._init()
-
-    def _init(self):
         if not "init" in self.config.keys(): 
             self._theta0 = np.zeros(self.ntheta)
-        elif self.config["init"] == "uniform":
+        elif config["init"] == "uniform":
             self._theta0 = np.random.uniform(size=self.ntheta)
-        elif self.config["init"] == "uniform_wide":
+        elif config["init"] == "uniform_wide":
             self._theta0 = np.random.uniform(0,5,size=self.ntheta)
-        elif self.config["init"] == "normal":
+        elif config["init"] == "normal":
             self._theta0 = np.random.normal(size=self.ntheta)
-        elif self.config["init"] == "zeros":
+        elif config["init"] == "zeros":
             self._theta0 = np.zeros(self.ntheta)
-        elif self.config["init"] == "ones":
+        elif config["init"] == "ones":
             self._theta0 = np.ones(self.ntheta)
-        elif self.config["init"] == "sample" and self._theta_ranges is None:
-            self._theta_ranges = [(1,10)] * self._ntheta
-            self._theta0 = self._sample()
         else:
             self._theta0 = np.ones(self.ntheta)
         self.theta = self._theta0
-
-    def _sample(self):
-        assert self._theta_ranges is not None and len(self._theta_ranges) == \
-                self._ntheta
-        return [np.random.uniform(bounds[0],bounds[1])\
-                for bounds in self._theta_ranges]
-
-
-    def __call__(self):
-        self._theta0 = self._sample()
-        self.theta = self._theta0
+        # These need to be defined in the child class only
+        self._obj_expr = None 
+        self._model_expr = None 
+        self._theta_ranges = None # should be a nparam lengeht tuple of slices
 
     def _warm_start(self,curve):
         if self._theta_ranges == None:
@@ -70,6 +53,7 @@ class ParametricModelFactory():
         self._theta0 = brute(obj,self._theta_ranges,\
                         args=(self.model,curve),full_output=False, finish=None,\
                         Ns=1, workers=1)
+        print(self._theta0)
 
 
     def _lambdify(self):
@@ -254,7 +238,6 @@ class EXP2(ParametricModelFactory):
 
         # Function for the model
         self._model_expr = self.ts[0]*sym.exp(-self.ts[1]*self.x)
-        self._theta_ranges = [(-1,1)]*nparam
 
 
 class BNSL(ParametricModelFactory):
@@ -279,4 +262,4 @@ class BNSL(ParametricModelFactory):
             _model_expr_n = [1]
         self._model_expr = (_model_expr_base * math.prod(_model_expr_n))
 
-        self._theta_ranges = [(0.,1)]*nparam
+

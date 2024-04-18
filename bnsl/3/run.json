@@ -1,0 +1,96 @@
+{
+  "artifacts": [],
+  "command": "run",
+  "experiment": {
+    "base_dir": "/home/taylanot/Documents/learningcurvefitting",
+    "dependencies": [
+      "matplotlib==3.7.3",
+      "numpy==1.25.2",
+      "sacred==0.8.5",
+      "xarray==2023.11.0"
+    ],
+    "mainfile": "main.py",
+    "name": "name_your_experiment",
+    "repositories": [],
+    "sources": [
+      [
+        "data/database.py",
+        "_sources/database_3684fdaf4bb5fe5a676f119e9ea3bcd7.py"
+      ],
+      [
+        "fit.py",
+        "_sources/fit_4887122ae6ff74fb2661023c94f407d5.py"
+      ],
+      [
+        "main.py",
+        "_sources/main_935e1d529127d539027caddc5d993e4d.py"
+      ],
+      [
+        "model/__init__.py",
+        "_sources/__init___2449fd245ad6efd3501331a56d189125.py"
+      ],
+      [
+        "model/heuristic.py",
+        "_sources/heuristic_75a719d526750b2a0fae101f5e60b5c2.py"
+      ],
+      [
+        "model/param.py",
+        "_sources/param_08006bb3e604dd8624fbecbcb6a7cb3b.py"
+      ]
+    ]
+  },
+  "fail_trace": [
+    "Traceback (most recent call last):\n",
+    "  File \"/home/taylanot/Documents/environments/base/lib/python3.10/site-packages/sacred/config/captured_function.py\", line 42, in captured_function\n    result = wrapped(*args, **kwargs)\n",
+    "  File \"/home/taylanot/Documents/learningcurvefitting/main.py\", line 141, in run\n    df.columns = result[\"tags\"]\n",
+    "  File \"/home/taylanot/Documents/environments/base/lib/python3.10/site-packages/polars/dataframe/frame.py\", line 1190, in columns\n    self._df.set_column_names(names)\n",
+    "exceptions.ShapeError: 1 column names provided for a dataframe of width 2\n"
+  ],
+  "heartbeat": "2024-04-16T22:27:47.692447",
+  "host": {
+    "ENV": {},
+    "cpu": "11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz",
+    "hostname": "tud260627",
+    "os": [
+      "Linux",
+      "Linux-6.5.0-27-generic-x86_64-with-glibc2.35"
+    ],
+    "python_version": "3.10.12"
+  },
+  "meta": {
+    "command": "run",
+    "config_updates": {},
+    "named_configs": [],
+    "options": {
+      "--beat-interval": null,
+      "--capture": null,
+      "--comment": null,
+      "--debug": false,
+      "--enforce_clean": false,
+      "--file_storage": "bnsl",
+      "--force": false,
+      "--help": false,
+      "--id": null,
+      "--loglevel": null,
+      "--mongo_db": null,
+      "--name": null,
+      "--pdb": false,
+      "--print-config": false,
+      "--priority": null,
+      "--queue": false,
+      "--s3": null,
+      "--sql": null,
+      "--tiny_db": null,
+      "--unobserved": false,
+      "COMMAND": null,
+      "UPDATE": [],
+      "help": false,
+      "with": false
+    }
+  },
+  "resources": [],
+  "result": null,
+  "start_time": "2024-04-16T22:23:20.457708",
+  "status": "FAILED",
+  "stop_time": "2024-04-16T22:27:47.693017"
+}

@@ -1,0 +1,91 @@
+{
+  "artifacts": [
+    "bnsl.csv"
+  ],
+  "command": "run",
+  "experiment": {
+    "base_dir": "/home/taylanot/Documents/learningcurvefitting",
+    "dependencies": [
+      "matplotlib==3.7.3",
+      "numpy==1.25.2",
+      "sacred==0.8.5",
+      "xarray==2023.11.0"
+    ],
+    "mainfile": "main.py",
+    "name": "name_your_experiment",
+    "repositories": [],
+    "sources": [
+      [
+        "data/database.py",
+        "_sources/database_3684fdaf4bb5fe5a676f119e9ea3bcd7.py"
+      ],
+      [
+        "fit.py",
+        "_sources/fit_4887122ae6ff74fb2661023c94f407d5.py"
+      ],
+      [
+        "main.py",
+        "_sources/main_5926cbfb97add2ebd146513cb38aceb6.py"
+      ],
+      [
+        "model/__init__.py",
+        "_sources/__init___2449fd245ad6efd3501331a56d189125.py"
+      ],
+      [
+        "model/heuristic.py",
+        "_sources/heuristic_75a719d526750b2a0fae101f5e60b5c2.py"
+      ],
+      [
+        "model/param.py",
+        "_sources/param_08006bb3e604dd8624fbecbcb6a7cb3b.py"
+      ]
+    ]
+  },
+  "heartbeat": "2024-04-16T22:17:08.191622",
+  "host": {
+    "ENV": {},
+    "cpu": "11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz",
+    "hostname": "tud260627",
+    "os": [
+      "Linux",
+      "Linux-6.5.0-27-generic-x86_64-with-glibc2.35"
+    ],
+    "python_version": "3.10.12"
+  },
+  "meta": {
+    "command": "run",
+    "config_updates": {},
+    "named_configs": [],
+    "options": {
+      "--beat-interval": null,
+      "--capture": null,
+      "--comment": null,
+      "--debug": false,
+      "--enforce_clean": false,
+      "--file_storage": "bnsl",
+      "--force": false,
+      "--help": false,
+      "--id": null,
+      "--loglevel": null,
+      "--mongo_db": null,
+      "--name": null,
+      "--pdb": false,
+      "--print-config": false,
+      "--priority": null,
+      "--queue": false,
+      "--s3": null,
+      "--sql": null,
+      "--tiny_db": null,
+      "--unobserved": false,
+      "COMMAND": null,
+      "UPDATE": [],
+      "help": false,
+      "with": false
+    }
+  },
+  "resources": [],
+  "result": null,
+  "start_time": "2024-04-16T22:17:06.719598",
+  "status": "COMPLETED",
+  "stop_time": "2024-04-16T22:17:08.190142"
+}

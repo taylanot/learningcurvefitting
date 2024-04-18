@@ -51,38 +51,33 @@ def my_config():
     #conf["model"] = {
     #        "name":"EXP2",      # model name this allows selection of the model
     #        "init":"ones",    # how to initiliaze the model parameters
-    #        #"fit":"log",        # fit with log transformation
     #        "opt": "L-BFGS-B",  # all the options in scipy.optimize.minimize
     #        "jac": True,        # exact jacobian usage instead of finite diff.
     #        }
     conf["model"] = {
             "name":"BNSL",      # model name this allows selection of the model
-            "nbreak":6,         # model name this allows selection of the model
-            "init":"ones",      # how to initiliaze the model parameters
+            "nbreak":2,         # model name this allows selection of the model
+            "init":"warm",      # how to initiliaze the model parameters
             "fit":"log",        # fit with log transformation
             "opt": "lm",        # all the options in scipy.optimize.minimize
                                 # and lm for scipy.optimize.curve_fit
-            "jac": False,        # exact jacobian usage instead of finite diff.
+            "jac": True,        # exact jacobian usage instead of finite diff.
+            }
+
+    conf["fit"] = {
+            "which":[0,1],
+            "till":50
             }
 
     # Add experiment functions here.
-    conf["exp"] = {
+    conf["with"] = {
             "fit":fit,
+            "fit_id":fit_id,
             } 
 
-    # Add experiment configuration
-    conf["fit"] = {
-            "which":[1],
-            "till":50,
-            "restarts":4,
-            }
-
-    # Get the available models
     conf["models"] = dict()
     for a, b in insp.getmembers(implib.import_module("model"),insp.isclass):
         conf["models"].setdefault(a, [ ]).append(b) 
-
-    # Save related configuration
     conf["save"] = {
             "type":"brief",      # or detail
             "name":"bnsl.csv",   # name of the file
@@ -104,7 +99,7 @@ def run(seed,conf,_run):
     #curves = Curves(np.arange(20),np.array([np.exp(-np.arange(20)),
     #                                        np.exp(-2*np.arange(20))]))
 
-    curves = Database(conf["database"]).get_curves([0,1])
+    curves = Database(conf["database"]).get_curves()
     #print(curves)
     #database = xr.load_dataset(conf["database"]["name"])
     #print(database)
@@ -122,34 +117,28 @@ def run(seed,conf,_run):
     #curves = Curve(np.arange(1,20),np.array(model.predict(np.arange(1,20))))
 
     # Select the experiment
-    result = conf["exp"]["fit"](curves,model,conf["fit"])
+    if (isinstance(conf["fit"]["which"],str) and conf["fit"]["which"]=="all"):
+        result = conf["with"]["fit"](
+            curves,model,conf["fit"]["till"],conf["fit"]["which"]
+            )
 
-    #if (isinstance(conf["fit"]["which"],str) and conf["fit"]["which"]=="all"):
-    #    result = conf["with"]["fit"](
-    #        curves,model,conf["fit"]["till"],conf["fit"]["which"]
-    #        )
+    elif (isinstance(conf["fit"]["which"],int)):
+        result = conf["with"]["fit_id"](
+            curves[conf["fit"]["which"]],model,conf["fit"]["till"]
+            )
+    elif (isinstance(conf["fit"]["which"],list)):
+        result = conf["with"]["fit"](
+            curves,model,conf["fit"]["till"],conf["fit"]["which"]
+            )
 
-    #elif (isinstance(conf["fit"]["which"],int)):
-    #    result = conf["with"]["fit_id"](
-    #        curves[conf["fit"]["which"]],model,conf["fit"]["till"]
-    #        )
-    #elif (isinstance(conf["fit"]["which"],list)):
-    #    result = conf["with"]["fit"](
-    #        curves,model,conf["fit"]["till"],conf["fit"]["which"]
-    #        )
-
-    #else:
-    #    NotImplementedError
+    else:
+        NotImplementedError
 
     if conf["save"]["type"] == "brief":
+        print(result)
         #print(ps.DataFrame(result["error"][:,-1][np.newaxis,:],orient='row'))
-        if len(result["error"].shape) != 1:
-            df = ps.DataFrame(result["error"][:,-1][np.newaxis,:],orient='row')
-            df.columns = result["tags"]
-        else:
-            df = ps.DataFrame(result["error"],orient='row')
-            df.columns = [result["tag"]]
-        print(df)
+        df = ps.DataFrame(result["error"][:,-1][np.newaxis,:],orient='row')
+        df.columns = result["tags"]
         df.write_csv(conf["save"]["name"],separator=",")
         ex.add_artifact(conf["save"]["name"])
     else:
