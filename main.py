@@ -11,7 +11,7 @@ import numpy as np
 import sys
 import inspect as insp
 import importlib as implib
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import os
 # Import local
 from model import *
@@ -58,9 +58,9 @@ def my_config():
     conf["model"] = {
             "name":"BNSL",      # model name this allows selection of the model
             "nbreak":6,         # model name this allows selection of the model
-            "init":"ones",      # how to initiliaze the model parameters
+            "init":"warm",      # how to initiliaze the model parameters
             "fit":"log",        # fit with log transformation
-            "opt": "lm",        # all the options in scipy.optimize.minimize
+            "opt":"lm",        # all the options in scipy.optimize.minimize
                                 # and lm for scipy.optimize.curve_fit
             "jac": False,        # exact jacobian usage instead of finite diff.
             }
@@ -72,9 +72,9 @@ def my_config():
 
     # Add experiment configuration
     conf["fit"] = {
-            "which":[1],
+            "which":3,
             "till":50,
-            "restarts":4,
+            "restarts":None,
             }
 
     # Get the available models
@@ -85,7 +85,7 @@ def my_config():
     # Save related configuration
     conf["save"] = {
             "type":"brief",      # or detail
-            "name":"bnsl.csv",   # name of the file
+            "name":"last.csv",   # name of the file
             }
 
 @ex.automain
@@ -104,7 +104,7 @@ def run(seed,conf,_run):
     #curves = Curves(np.arange(20),np.array([np.exp(-np.arange(20)),
     #                                        np.exp(-2*np.arange(20))]))
 
-    curves = Database(conf["database"]).get_curves([0,1])
+    curves = Database(conf["database"]).get_curves([1,2,3,4])
     #print(curves)
     #database = xr.load_dataset(conf["database"]["name"])
     #print(database)
@@ -123,7 +123,7 @@ def run(seed,conf,_run):
 
     # Select the experiment
     result = conf["exp"]["fit"](curves,model,conf["fit"])
-
+    print(result)
     #if (isinstance(conf["fit"]["which"],str) and conf["fit"]["which"]=="all"):
     #    result = conf["with"]["fit"](
     #        curves,model,conf["fit"]["till"],conf["fit"]["which"]
@@ -142,14 +142,12 @@ def run(seed,conf,_run):
     #    NotImplementedError
 
     if conf["save"]["type"] == "brief":
-        #print(ps.DataFrame(result["error"][:,-1][np.newaxis,:],orient='row'))
         if len(result["error"].shape) != 1:
             df = ps.DataFrame(result["error"][:,-1][np.newaxis,:],orient='row')
             df.columns = result["tags"]
         else:
             df = ps.DataFrame(result["error"],orient='row')
             df.columns = [result["tag"]]
-        print(df)
         df.write_csv(conf["save"]["name"],separator=",")
         ex.add_artifact(conf["save"]["name"])
     else:

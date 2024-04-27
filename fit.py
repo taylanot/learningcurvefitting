@@ -6,18 +6,11 @@
 import time 
 import numpy as np
 import warnings 
-import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore",category=RuntimeWarning)
 def SquaredError(model, curve):
-        #import matplotlib.pyplot as plt
-        #plt.plot(curve.anchors,curve.labels,'r--')
-        #plt.plot(curve.anchors,model.predict(curve.anchors),'k')
-        #plt.show()
         return (model.predict(curve.anchors)-curve.labels)**2
 
 def fit(curves,model,config):
-
-
     """ 
         Fit all the data
         curves  : MxN M full curves with N acnhors
@@ -25,24 +18,23 @@ def fit(curves,model,config):
         till    : number of anchors from the  start to fit
     """
     def fit_all(fit_func,config):
-        if idx == "all":
-            error = np.zeros((curves.M,curves.N))
-            status = np.empty(shape=(curves.M),dtype=np.str_)
-            init = np.zeros((curves.M, model.ntheta))
-            final = np.zeros((curves.M, model.ntheta))
-            fit_sec = np.zeros(curves.M)
-            tags = curves.tags
-            for i, curve in enumerate(curves):
-                start = time.time()
-                try:
-                    _, status[i], init[i,:], final[i,:], error[i,:],\
-                            fit_sec[i] = fit_func(curve,model,config).values()
-                except KeyboardInterrupt:
-                    break
-                except Exception as e:
-                    warnings.warn(str(e))
-                    status[i], init[i,:], final[i,:], error[i,:], fit_sec[i] = \
-                        ("f", np.nan, np.nan, np.nan, time.time()-start)
+        error = np.zeros((curves.M,curves.N))
+        status = np.empty(shape=(curves.M),dtype=np.str_)
+        init = np.zeros((curves.M, model.ntheta))
+        final = np.zeros((curves.M, model.ntheta))
+        fit_sec = np.zeros(curves.M)
+        tags = curves.tags
+        for i, curve in enumerate(curves):
+            start = time.time()
+            try:
+                _, status[i], init[i,:], final[i,:], error[i,:],\
+                        fit_sec[i] = fit_func(curve,model,config).values()
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                warnings.warn(str(e))
+                status[i], init[i,:], final[i,:], error[i,:], fit_sec[i] = \
+                    ("f", np.nan, np.nan, np.nan, time.time()-start)
         return {"tags":tags,
                 "status":status, "theta0":init, "theta":final,\
                 "error":error, "time":fit_sec}
@@ -81,7 +73,7 @@ def fit(curves,model,config):
     else:
         fit_func = fit_id
 
-    if (isinstance(config["which"],str) and conf["fit"]["which"]=="all"):
+    if (isinstance(config["which"],str) and config["which"]=="all"):
         return fit_all(fit_func,config)
     elif (isinstance(config["which"],int)):
         return fit_id(curves[config["which"]],model,config)
