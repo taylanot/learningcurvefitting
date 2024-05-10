@@ -11,6 +11,7 @@ def SquaredError(model, curve):
         return (model.predict(curve.anchors)-curve.labels)**2
 
 def fit(curves,model,config):
+
     """ 
         Fit all the data
         curves  : MxN M full curves with N acnhors
@@ -99,7 +100,9 @@ def fit_id(curve,model,config):
             "theta0":model._theta0, "theta":model.theta, \
                     "error":SquaredError(model,curve), "time":end-start}
 
-
+###############################################################################
+# I think I can add validation as an option here 
+###############################################################################
 def fit_id_restart(curve,model,config):
     """ 
         curves  : 1xN shaped M full curves
@@ -129,15 +132,10 @@ def fit_id_restart(curve,model,config):
             warnings.warn(str(e))
             status[i],theta0[i,:],theta[i,:],error[i],times[i] = \
                     ("f", np.nan, np.nan, np.inf, time.time()-start2)
-    print(error)
-    print(status)
     idx = np.argmin(error)
     model.theta = theta[idx,:]
     model._theta0 = theta0[idx,:]
     end = time.time()
-    plt.plot(curve.anchors,curve.labels,'r--')
-    plt.plot(curve.anchors,model.predict(curve.anchors),'k')
-    plt.show()
 
     return {"tag":curve.tag, "status":status[idx],
             "theta0":theta0[idx,:], "theta":theta[idx,:], \

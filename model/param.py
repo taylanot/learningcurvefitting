@@ -62,14 +62,14 @@ class ParametricModelFactory():
 
     def _warm_start(self,curve):
         if self._theta_ranges == None:
-           self._theta_ranges = [slice(0,1,0.25)]*self._ntheta
+           self._theta_ranges = [slice(0,1,0.2)]*self._ntheta
         self._lambdify__()
         def obj (param,model,curve):
             return np.mean((model(curve.anchors, *param)-curve.labels)**2)
 
         self._theta0 = brute(obj,self._theta_ranges,\
                         args=(self.model,curve),full_output=False, finish=None,\
-                        Ns=1, workers=1)
+                        Ns=10, workers=1)
 
 
     def _lambdify(self):
@@ -270,13 +270,14 @@ class BNSL(ParametricModelFactory):
         super().__init__(config, nparam)
         
         # Function for the model
-        _model_expr_base = self.ts[0]+self.ts[1]*self.x**-self.ts[2]
+        _model_expr_base = (1.25*self.ts[1]-1)*self.x**-self.ts[2]
         if self.nbreak>0:
-            _model_expr_n = [(1.+(self.x/self.ts[3*i])**(1./self.ts[3*i+1]))\
+            _model_expr_n = [(1.+(self.x/(1.25*self.ts[3*i]-1))**(1./self.ts[3*i+1]))\
                     **(-self.ts[3*i+2]*self.ts[3*i+1])\
                     for i in range(1,self.nbreak+1)]
         else:
             _model_expr_n = [1]
-        self._model_expr = (_model_expr_base * math.prod(_model_expr_n))
 
-        self._theta_ranges = [(0.,1)]*nparam
+        self._model_expr = (self.ts[0]+_model_expr_base * math.prod(_model_expr_n))
+
+        self._theta_ranges = [slice(0.,5,1)]*nparam

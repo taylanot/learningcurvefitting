@@ -1,0 +1,59 @@
+{
+  "__doc__": " \n    Configuration goes here everything is arranged as a nested dictionary.\n    Seed is generated randomly and stored in the config.json\n    when you add a file observer. \n",
+  "a": "LASTGRAD",
+  "b": {
+    "py/type": "model.heuristic.LASTGRAD"
+  },
+  "conf": {
+    "database": {
+      "filename": "classification.csv",
+      "kwargs": null,
+      "type": "csv"
+    },
+    "exp": {
+      "fit": {
+        "py/function": "fit.fit"
+      }
+    },
+    "fit": {
+      "restarts": null,
+      "till": 10,
+      "which": "all"
+    },
+    "model": {
+      "fit": "log",
+      "init": "warm",
+      "jac": false,
+      "name": "BNSL",
+      "nbreak": 2,
+      "opt": "lm"
+    },
+    "models": {
+      "BNSL": [
+        {
+          "py/type": "model.param.BNSL"
+        }
+      ],
+      "EXP2": [
+        {
+          "py/type": "model.param.EXP2"
+        }
+      ],
+      "LAST1": [
+        {
+          "py/type": "model.heuristic.LAST1"
+        }
+      ],
+      "LASTGRAD": [
+        {
+          "py/type": "model.heuristic.LASTGRAD"
+        }
+      ]
+    },
+    "save": {
+      "name": "last.csv",
+      "type": "brief"
+    }
+  },
+  "seed": 967494405
+}

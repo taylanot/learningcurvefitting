@@ -17,16 +17,26 @@ import os
 from model import *
 from data import *
 from fit import *
-
+from results import *
 experiment_name = 'name_your_experiment'
 ex = Experiment(experiment_name,save_git_info=False)
 
 @ex.capture
-def get_experiment_dir(_run):
+def get_run_dir(_run):
     if _run._id is not None:
         return os.path.join(_run.experiment_info["name"],_run._id)
     else:
         return _run.experiment_info["name"]
+
+@ex.capture
+def get_experiment_dir(_run):
+    return _run.experiment_info["name"]
+
+
+@ex.capture
+def get_observer_dir(_run):
+       return _run.observers[0].basedir
+
 
 @ex.config
 def my_config():
@@ -44,7 +54,7 @@ def my_config():
     #        }
     conf["database"] = {
             "type":"csv",
-            "filename":"test_class.csv",   
+            "filename":"classification.csv",   
             "kwargs":None       # this should include split/normalize at least
             }
 
@@ -52,12 +62,11 @@ def my_config():
     #        "name":"EXP2",      # model name this allows selection of the model
     #        "init":"ones",    # how to initiliaze the model parameters
     #        #"fit":"log",        # fit with log transformation
-    #        "opt": "L-BFGS-B",  # all the options in scipy.optimize.minimize
-    #        "jac": True,        # exact jacobian usage instead of finite diff.
+    #        "opt": "L-BFGS-B",  # all the options in scipy.optimize.minimize "jac": True,        # exact jacobian usage instead of finite diff.
     #        }
     conf["model"] = {
             "name":"BNSL",      # model name this allows selection of the model
-            "nbreak":6,         # model name this allows selection of the model
+            "nbreak":0,         # model name this allows selection of the model
             "init":"warm",      # how to initiliaze the model parameters
             "fit":"log",        # fit with log transformation
             "opt":"lm",        # all the options in scipy.optimize.minimize
@@ -72,7 +81,7 @@ def my_config():
 
     # Add experiment configuration
     conf["fit"] = {
-            "which":3,
+            "which":"all",
             "till":50,
             "restarts":None,
             }
@@ -95,7 +104,6 @@ def run(seed,conf,_run):
         seed    : seed of the run (automatically determined by sacred)
         conf    : configuration that we specify
     """
-    save_dir = get_experiment_dir()
     # Get the database to be used
 
     # It can be good to write a database class fro wrapping this nicely for any
@@ -104,7 +112,7 @@ def run(seed,conf,_run):
     #curves = Curves(np.arange(20),np.array([np.exp(-np.arange(20)),
     #                                        np.exp(-2*np.arange(20))]))
 
-    curves = Database(conf["database"]).get_curves([1,2,3,4])
+    curves = Database(conf["database"]).get_curves()
     #print(curves)
     #database = xr.load_dataset(conf["database"]["name"])
     #print(database)
@@ -123,7 +131,6 @@ def run(seed,conf,_run):
 
     # Select the experiment
     result = conf["exp"]["fit"](curves,model,conf["fit"])
-    print(result)
     #if (isinstance(conf["fit"]["which"],str) and conf["fit"]["which"]=="all"):
     #    result = conf["with"]["fit"](
     #        curves,model,conf["fit"]["till"],conf["fit"]["which"]
@@ -141,14 +148,12 @@ def run(seed,conf,_run):
     #else:
     #    NotImplementedError
 
-    if conf["save"]["type"] == "brief":
-        if len(result["error"].shape) != 1:
-            df = ps.DataFrame(result["error"][:,-1][np.newaxis,:],orient='row')
-            df.columns = result["tags"]
-        else:
-            df = ps.DataFrame(result["error"],orient='row')
-            df.columns = [result["tag"]]
-        df.write_csv(conf["save"]["name"],separator=",")
-        ex.add_artifact(conf["save"]["name"])
+    exp_path=get_experiment_dir(),
+    if hasattr(_run,"observer"):
+        obs_path=get_observer_dir(),
     else:
-        NotImplementedError
+        obs_path = "./"
+    path = os.path.join(obs_path[0],exp_path[0],str(conf['fit']['till']),
+            os.path.splitext(conf["database"]["filename"])[0])
+    mlcxx_type(result,conf["save"],path)
+    #ex.add_artifact(config['save']["name"])

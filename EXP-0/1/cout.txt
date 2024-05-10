@@ -1,0 +1,7 @@
+INFO - BNSL2 - Running command 'run'
+INFO - BNSL2 - Started run with ID "1"
+0
+/home/taylanot/Documents/environments/base/lib/python3.10/site-packages/scipy/optimize/_minpack_py.py:1010: OptimizeWarning: Covariance of the parameters could not be estimated
+  warnings.warn('Covariance of the parameters could not be estimated',
+1
+2
