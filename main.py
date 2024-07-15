@@ -81,7 +81,7 @@ def my_config():
 
     # Add experiment configuration
     conf["fit"] = {
-            "which":[0,1],
+            "which":[0],
             "till":50,
             "restarts":None,
             }
@@ -149,7 +149,7 @@ def run(seed,conf,_run):
     #    NotImplementedError
 
     exp_path=get_experiment_dir(),
-    if hasattr(_run,"observers"):
+    if hasattr(_run,"observers") and len(_run.observers)!=0:
         obs_path=get_observer_dir(),
     else:
         obs_path = "./"

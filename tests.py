@@ -50,7 +50,7 @@ def num_jac(f,x,args=None,method='central',h=0.01, ):
     Creating a test factory is a great idea for this i think. Need to adjust
     above num_jac for the reversed args intake.
 """
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 def jac_test_factory(model,x = np.arange(1,20),tol=1e-3):

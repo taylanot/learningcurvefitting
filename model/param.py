@@ -165,6 +165,13 @@ class ParametricModelFactory():
         return sym.lambdify((self.ts,self.x), self._model_expr)
 
     @property
+    def get_obj(self):
+        """
+            Underlying function
+        """
+        return sym.lambdify((self.ts,self.x), self._model_expr)
+
+    @property
     def get_jac_model(self):
         """
             Jacobian lambda function
@@ -256,6 +263,243 @@ class EXP2(ParametricModelFactory):
         self._model_expr = self.ts[0]*sym.exp(-self.ts[1]*self.x)
         self._theta_ranges = [(-1,1)]*nparam
 
+class POW2(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 2
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+                (-self.ts[0]*(self.xi[self.i])**-self.ts[1]-
+                    self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = self.ts[0]*(self.x)**-self.ts[1]
+        self._theta_ranges = [(-1,1)]*nparam
+
+class LOG2(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 2
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+                (-self.ts[0]*sym.log(self.xi[self.i])+self.ts[1]-
+                    self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = self.ts[0]*sym.log(self.x)+self.ts[1]
+        self._theta_ranges = [(-1,1)]*nparam
+
+class LIN2(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 2
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+                (self.ts[0]*(self.xi[self.i])+self.ts[1]-
+                    self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = self.ts[0]*(self.x)+self.ts[1]
+        self._theta_ranges = [(-1,1)]*nparam
+
+class ILOG2(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 2
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+                (-self.ts[0]/sym.log(self.xi[self.i])+self.ts[1]-
+                    self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = -self.ts[0]/sym.log(self.x)+self.ts[1]
+        self._theta_ranges = [(-1,1)]*nparam
+
+class POW3(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 3
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+                (self.ts[0]-self.ts[1]*(self.xi[self.i])**-self.ts[2]-
+                    self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = self.ts[0]-self.ts[1]*(self.x)**-self.ts[2]
+        self._theta_ranges = [(-1,1)]*nparam
+
+class EXP3(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 3
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+                (self.ts[0]*sym.exp(-self.ts[1]*self.xi[self.i])+self.ts[2]-
+                    self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = self.ts[0]*sym.exp(-self.ts[1]*self.x)+self.ts[2]
+        self._theta_ranges = [(-1,1)]*nparam
+
+class VAP3(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 3
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(sym.exp(
+    self.ts[0]+self.ts[1]/self.xi[self.i]+self.ts[2]*sym.log(self.xi[self.i]))-
+                    self.yi[self.i])**2,
+                (self.i,0,self.N))
+
+        # Function for the model
+        self._model_expr = sym.exp(self.ts[0]+self.ts[1]/self.x+self.ts[2]*sym.log(self.x))
+        self._theta_ranges = [(-1,1)]*nparam
+
+class EXPP3(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 3
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+            (self.ts[2] - sym.exp((-self.ts[1]+self.xi[self.i])**self.ts[0])-
+                    self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = self.ts[2]-sym.exp((-self.ts[1]+self.x)**self.ts[0])
+        self._theta_ranges = [(-1,1)]*nparam
+
+class LOGPOW3(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 3
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+            (self.ts[0]/((self.xi[self.i]*sym.exp(-self.ts[1]))**self.ts[2]+1)-
+                    self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = self.ts[0]/((self.x*sym.exp(-self.ts[1]))**self.ts[2]+1)
+        self._theta_ranges = [(-1,1)]*nparam
+
+class POW4(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 4
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+                (self.ts[0]-self.ts[1]*(self.xi[self.i]+self.ts[3])**-self.ts[2]
+                    -self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = self.ts[0]-self.ts[1]*(self.x+self.ts[3])**-self.ts[2]
+        self._theta_ranges = [(-1,1)]*nparam
+
+class EXP4(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 4
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+        (self.ts[2]-sym.exp(-self.ts[0]*self.xi[self.i]**self.ts[3]+self.ts[1])\
+                    - self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = self.ts[2]-\
+                sym.exp(-self.ts[0]*self.x**self.ts[3]+self.ts[1])
+        self._theta_ranges = [(-1,1)]*nparam
+
+class MMF4(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 4
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+                ((self.ts[0]*self.ts[1]+self.ts[2]*self.xi[self.i]**self.ts[3])\
+                                            /(self.ts[1]+self.x**self.ts[3])
+                    -self.yi[self.i])**2,
+                (self.i,0,self.N)))
+
+        # Function for the model
+        self._model_expr = (self.ts[0]*self.ts[1]+self.ts[2]*self.x**self.ts[3])\
+                                                /(self.ts[1]+self.x**self.ts[3])
+        self._theta_ranges = [(-1,1)]*nparam
+
+class WBL4(ParametricModelFactory):
+    def __init__(self,config):
+        
+        # How many parameters does the model have 
+        nparam = 4
+
+        super().__init__(config, nparam)
+        
+        # Objective function with the indexing
+        self._obj_expr = (sym.Sum(
+            -self.ts[1]*sym.exp(-self.ts[0]*self.x**self.ts[3])+self.ts[2]
+                    - self.yi[self.i])**2,
+                (self.i,0,self.N))
+
+        # Function for the model
+        self._model_expr = -self.ts[1]*sym.exp(-self.ts[0]*self.x**self.ts[3])\
+                +self.ts[2] 
+        self._theta_ranges = [(-1,1)]*nparam
 
 class BNSL(ParametricModelFactory):
     def __init__(self,config):
@@ -269,15 +513,27 @@ class BNSL(ParametricModelFactory):
         nparam = 3+self.nbreak*3
         super().__init__(config, nparam)
         
+        # # Function for the model
+        # _model_expr_base = (1.25*self.ts[1]-1)*self.x**-self.ts[2]
+
+        # if self.nbreak>0:
+        #     _model_expr_n = [(1.+(self.x/(1.25*self.ts[3*i]-1))**(1./self.ts[3*i+1]))\
+        #             **(-self.ts[3*i+2]*self.ts[3*i+1])\
+        #             for i in range(1,self.nbreak+1)]
+        # else:
+        #     _model_expr_n = [1]
+
         # Function for the model
-        _model_expr_base = (1.25*self.ts[1]-1)*self.x**-self.ts[2]
+        _model_expr_base = (self.ts[1])*self.x**-self.ts[2]
+
         if self.nbreak>0:
-            _model_expr_n = [(1.+(self.x/(1.25*self.ts[3*i]-1))**(1./self.ts[3*i+1]))\
+            _model_expr_n = [(1.+(self.x/(self.ts[3*i]))**(1./self.ts[3*i+1]))\
                     **(-self.ts[3*i+2]*self.ts[3*i+1])\
                     for i in range(1,self.nbreak+1)]
         else:
             _model_expr_n = [1]
 
+
         self._model_expr = (self.ts[0]+_model_expr_base * math.prod(_model_expr_n))
 
-        self._theta_ranges = [slice(0.,5,1)]*nparam
+        self._theta_ranges = [slice(0.1,40,10)]*nparam

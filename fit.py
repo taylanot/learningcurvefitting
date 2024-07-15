@@ -6,7 +6,7 @@
 import time 
 import numpy as np
 import warnings 
-warnings.filterwarnings("ignore",category=RuntimeWarning)
+#warnings.filterwarnings("ignore",category=RuntimeWarning)
 def SquaredError(model, curve):
         return (model.predict(curve.anchors)-curve.labels)**2
 
