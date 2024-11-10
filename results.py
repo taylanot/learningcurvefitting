@@ -6,9 +6,10 @@
 import polars as ps 
 import numpy as np
 import os
+import csv
 import pathlib
 
-def mlcxx_type(result, conf,path=None):
+def mlcxx_type(result,conf,path=None):
     if path is None:
         path = "."
     else:
@@ -23,3 +24,10 @@ def mlcxx_type(result, conf,path=None):
         df.write_csv(os.path.join(path,conf["name"]),separator=",")
     else:
         NotImplementedError
+
+
+def print_result(data_dict, conf, path=None):
+    df = ps.DataFrame([data_dict])  # Create a single-row DataFrame with the dictionary
+    print(df)
+
+
