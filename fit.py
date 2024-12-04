@@ -81,7 +81,7 @@ def fit(curves,model,config):
     elif (isinstance(config["which"],list)):
         return fit_ids(fit_func,config)
     else:
-        NotImplementedError
+        raise NotImplementedError
 
 def fit_id(curve,model,config):
     """ 

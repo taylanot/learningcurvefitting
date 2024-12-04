@@ -22,8 +22,12 @@ def mlcxx_type(result,conf,path=None):
             df = ps.DataFrame(result["error"],orient='row')
             df.columns = [result["tag"]]
         df.write_csv(os.path.join(path,conf["name"]),separator=",")
+    elif conf["type"] == "detail":
+        df = ps.DataFrame(np.mean(result["error"].T,axis=0)[np.newaxis,:],orient='row')
+        df.columns = result["tags"]
+        df.write_csv(os.path.join(path,conf["name"]),separator=",")
     else:
-        NotImplementedError
+        raise NotImplementedError
 
 
 def print_result(data_dict, conf, path=None):

@@ -54,7 +54,8 @@ def my_config():
     #        }
     conf["database"] = {
             "type":"csv",
-            "filename":"classification.csv",   
+            "filename":"regression.csv",   
+            # "filename":"classification.csv",   
             "kwargs":None       # this should include split/normalize at least
             }
 
@@ -64,16 +65,22 @@ def my_config():
     #        #"fit":"log",        # fit with log transformation
     #        "opt": "L-BFGS-B",  # all the options in scipy.optimize.minimize "jac": True,        # exact jacobian usage instead of finite diff.
     #        }
+    # conf["model"] = {
+    #         "name":"BNSL",      # model name this allows selection of the model
+    #         "nbreak":0,         # model name this allows selection of the model
+    #         "init":"warm",      # how to initiliaze the model parameters
+    #         "fit":"log",        # fit with log transformation
+    #         "opt":"lm",        # all the options in scipy.optimize.minimize
+    #                             # and lm for scipy.optimize.curve_fit
+    #         "jac": False,        # exact jacobian usage instead of finite diff.
+    #         }
     conf["model"] = {
-            "name":"BNSL",      # model name this allows selection of the model
-            "nbreak":0,         # model name this allows selection of the model
-            "init":"warm",      # how to initiliaze the model parameters
-            "fit":"log",        # fit with log transformation
-            "opt":"lm",        # all the options in scipy.optimize.minimize
-                                # and lm for scipy.optimize.curve_fit
-            "jac": False,        # exact jacobian usage instead of finite diff.
+            "name":"MDS",   # model name this allows selection of the model
+            "database":"regression_train.csv",  # where to look for database
+            # "method":"leteit",  # where to look for database
+            "method":"rijn",  # where to look for database
+            "k":100,        # number of neighbors 
             }
-
     # Add experiment functions here.
     conf["exp"] = {
             "fit":fit,
@@ -93,8 +100,9 @@ def my_config():
 
     # Save related configuration
     conf["save"] = {
-            "type":"brief",      # or detail
-            "name":"last.csv",   # name of the file
+            # "type":"all",      # or detail
+            "type":"detail",      # or detail
+            "name":"error.csv",   # name of the file
             }
 
 @ex.automain
@@ -147,7 +155,6 @@ def run(seed,conf,_run):
 
     #else:
     #    NotImplementedError
-
     exp_path=get_experiment_dir(),
     if hasattr(_run,"observers") and len(_run.observers)!=0:
         obs_path=get_observer_dir(),
